@@ -1,5 +1,5 @@
 from flask import Flask, request, jsonify
-from urllib.parse import urlparse, urljoin, urlunparse
+from urllib.parse import urlparse, urljoin, urlunparse, urlsplit
 from bs4 import BeautifulSoup
 import requests
 import threading
@@ -68,6 +68,24 @@ class WebCrawler:
         # Initialize an empty set to store discovered URLs (avoids duplicates)
         urls = set()
 
+        # Ensure the base URL ends with a trailing slash if it's a directory-like path.
+        #
+        # Why this matters:
+        # The behavior of urljoin() depends on whether the base URL ends with a slash.
+        # - If it ends with '/', it's treated as a directory (e.g., /services/ → /services/page.html)
+        # - If it doesn't, it's treated as a file (e.g., /services → /page.html)
+        #
+        # This logic checks:
+        # 1. If the path does NOT already end in a '/'
+        # 2. AND the last part of the path does NOT contain a dot (.)
+        #    → Meaning it probably isn't a file (like index.html or style.css)
+        #
+        # If both are true, we assume the URL is a directory path and add the trailing slash
+        # to ensure relative links resolve correctly.
+        parsed = urlsplit(base_url)
+        if not parsed.path.endswith('/') and '.' not in parsed.path.split('/')[-1]:
+            base_url += '/'
+
         # Iterate over all collected HTML tags
         for tag in tags:
 
@@ -91,15 +109,20 @@ class WebCrawler:
             url = self.normalize_url(url)
             # Skip if the URL has already been visited
             if url in self.visited:
+                logging.debug("Already visited: %s", url)
                 return
             # Mark the URL as visited
             self.visited.add(url)
+            logging.info("Discovered unique URL for crawling: %s", url)
+
+        logging.debug("Crawling URL: %s | visited=%d", url, len(self.visited))
 
         try:
             # Attempt to fetch the page content with a timeout
             response = requests.get(url, timeout=5)
             # Proceed only if the page was successfully loaded (status code 200); skip all others
             if response.status_code != 200:
+                logging.warning("Non-200 response (%d) from URL: %s", response.status_code, url)
                 return
 
             # Extract all valid links from the page
@@ -110,8 +133,18 @@ class WebCrawler:
                 parsed_link = urlparse(link)
                 if parsed_link.netloc == domain:
                     self.crawl(link, domain)
+        except requests.exceptions.Timeout:
+            logging.warning("Timeout occurred while accessing URL: %s", url)
+            return
+        except requests.exceptions.SSLError as ssl_err:
+            logging.error("SSL error at %s: %s", url, ssl_err)
+            return
+        except requests.exceptions.RequestException as req_err:
+            logging.error("Request failed for %s: %s", url, req_err)
+            return
         except Exception as e:
-            logging.warning(f"Skipped URL {url} due to: {e}") #broken links, timeouts etc..
+            logging.exception("Unhandled exception while crawling %s: %s", url, e)
+            return
 
 # Define an HTTP GET endpoint at /pages that starts the web crawling process
 @app.route('/pages')

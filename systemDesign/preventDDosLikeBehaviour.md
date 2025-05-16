@@ -2,7 +2,7 @@
 
 A web crawler can unintentionally behave like a DDoS (Distributed Denial of Service) agent if it sends too many requests in a short time, especially to small or rate-limited servers.
 
-## 🛠 Future Improvement
+## Future Improvement
 
 * Maximum crawl depth to limit recursion and avoid deep link structures (e.g., only follow links 3 levels deep)
 
