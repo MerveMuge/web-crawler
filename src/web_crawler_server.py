@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Query, HTTPException
 from urllib.parse import urlparse, urljoin, urlunparse, urlsplit
+from collections import deque
 from bs4 import BeautifulSoup
 import requests
 import threading
@@ -93,50 +94,51 @@ class WebCrawler:
         return urls
 
     # Recursively crawl a given URL, staying within the specified domain
-    def crawl(self, url, domain):
+    def crawl(self, start_url, domain):
+        queue = deque([self.normalize_url(start_url)])
 
-        # Acquire the lock to safely check and update the visited URLs set
-        with self.lock:
+        while queue:
+            url = queue.popleft()
 
-            url = self.normalize_url(url)
-            # Skip if the URL has already been visited
-            if url in self.visited:
-                logging.debug("Already visited: %s", url)
-                return
-            # Mark the URL as visited
-            self.visited.add(url)
-            logging.info("Discovered unique URL for crawling: %s", url)
+            # Acquire the lock to safely check and update the visited URLs set
+            with self.lock:
+                # Skip if the URL has already been visited
+                if url in self.visited:
+                    logging.debug("Already visited: %s", url)
+                    continue
+                # Mark the URL as visited
+                self.visited.add(url)
+                logging.info("Discovered unique URL for crawling: %s", url)
 
-        logging.debug("Crawling URL: %s | visited=%d", url, len(self.visited))
+            logging.debug("Crawling URL: %s | visited=%d", url, len(self.visited))
 
-        try:
-            # Attempt to fetch the page content with a timeout
-            response = requests.get(url, timeout=5)
-            # Proceed only if the page was successfully loaded (status code 200); skip all others
-            if response.status_code != 200:
-                logging.warning("Non-200 response (%d) from URL: %s", response.status_code, url)
-                return
+            try:
+                # Attempt to fetch the page content with a timeout
+                response = requests.get(url, timeout=5)
+                # Proceed only if the page was successfully loaded (status code 200); skip all others
+                if response.status_code != 200:
+                    logging.warning("Non-200 response (%d) from URL: %s", response.status_code, url)
+                    continue
 
-            # Extract all valid links from the page
-            links = self.extract_links(response.text, url)
+                # Extract all valid links from the page
+                links = self.extract_links(response.text, url)
 
-            # Recursively crawl links that belong to the same domain
-            for link in links:
-                parsed_link = urlparse(link)
-                if parsed_link.netloc == domain:
-                    self.crawl(link, domain)
-        except requests.exceptions.Timeout:
-            logging.warning("Timeout occurred while accessing URL: %s", url)
-            return
-        except requests.exceptions.SSLError as ssl_err:
-            logging.error("SSL error at %s: %s", url, ssl_err)
-            return
-        except requests.exceptions.RequestException as req_err:
-            logging.error("Request failed for %s: %s", url, req_err)
-            return
-        except Exception as e:
-            logging.exception("Unhandled exception while crawling %s: %s", url, e)
-            return
+                for link in links:
+                    parsed_link = urlparse(link)
+                    if parsed_link.netloc == domain:
+                        normalized_link = self.normalize_url(link)
+                        with self.lock:
+                            if normalized_link not in self.visited:
+                                queue.append(normalized_link)
+
+            except requests.exceptions.Timeout:
+                logging.warning("Timeout occurred while accessing URL: %s", url)
+            except requests.exceptions.SSLError as ssl_err:
+                logging.error("SSL error at %s: %s", url, ssl_err)
+            except requests.exceptions.RequestException as req_err:
+                logging.error("Request failed for %s: %s", url, req_err)
+            except Exception as e:
+                logging.exception("Unhandled exception while crawling %s: %s", url, e)
 
 # Define an HTTP GET endpoint at /pages that starts the web crawling process
 # Get the 'target' URL from the query string (e.g., /pages?target=https://example.com)
