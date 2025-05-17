@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, Query, HTTPException
 from urllib.parse import urlparse, urljoin, urlunparse, urlsplit
 from bs4 import BeautifulSoup
 import requests
@@ -8,24 +8,16 @@ import logging
 # Configure basic logging
 logging.basicConfig(level=logging.INFO)
 
-# Flask is a lightweight web framework for Python that allows you to build web applications and APIs.
-# This line creates a new Flask application instance.
-# The __name__ variable helps Flask determine the location of the application so it can find resources like templates.
-app = Flask(__name__)
+app = FastAPI(title="Web Crawler API")
 
 """
-Web Crawler with HTTP Interface using Flask
+Web Crawler API (FastAPI)
 
-This Python script runs a web crawler as a local HTTP server using Flask.
-It accepts a GET request to /pages?target=<url> and crawls all pages within the same domain.
-The crawler:
-- Extracts URLs from various HTML attributes (href, src, link, etc.)
-- Uses a set to store visited URLs and avoid duplicates
-- Is fault-tolerant and skips over inaccessible pages
-- Returns a JSON response listing all discovered, unique pages on the domain
+This FastAPI app exposes an HTTP GET endpoint `/pages` that crawls a website starting from the provided URL.
+It returns all unique, valid pages under the same domain.
 
 Example usage:
-http://localhost:5000/pages?target=https://example.com
+http://localhost:8000/pages?target=https://example.com
 """
 class WebCrawler:
 
@@ -147,16 +139,19 @@ class WebCrawler:
             return
 
 # Define an HTTP GET endpoint at /pages that starts the web crawling process
-@app.route('/pages')
-def get_pages():
+# Get the 'target' URL from the query string (e.g., /pages?target=https://example.com)
+@app.get(
+    "/pages",
+    summary="Start crawling a website",
+    description="Crawls all pages under the same domain starting from the given target URL."
+)
+def get_pages(target: str = Query(..., description="Full URL to start crawling from (e.g., https://example.com)")):
 
-    # Get the 'target' URL from the query string (e.g., /pages?target=https://example.com)
-    target = request.args.get('target')
     crawler = WebCrawler()
 
     # Validate the target URL; return a 400 Bad Request error if invalid or missing
     if not target or not crawler.is_valid_url(target):
-        return jsonify({'error': 'Invalid or missing URL'}), 400
+        raise HTTPException(status_code=400, detail="Invalid or missing URL")
 
     # Parse the URL to extract its domain
     parsed = urlparse(target)
@@ -165,11 +160,7 @@ def get_pages():
     # Start crawling from the target URL, limited to the same domain
     crawler.crawl(target, domain)
 
-    # Return a JSON response containing the domain and the list of discovered pages
-    return jsonify({
+    return {
         'domain': f"{parsed.scheme}://{domain}",
         'pages': sorted(crawler.visited)
-    })
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    }
