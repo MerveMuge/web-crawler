@@ -3,7 +3,6 @@ from urllib.parse import urlparse, urljoin, urlunparse, urlsplit
 from collections import deque
 from bs4 import BeautifulSoup
 import requests
-import threading
 import logging
 
 # Configure basic logging
@@ -20,16 +19,7 @@ It returns all unique, valid pages under the same domain.
 Example usage:
 http://localhost:8000/pages?target=https://example.com
 """
-class WebCrawler:
-
-    # Initialize the WebCrawler with a set for visited URLs and a thread lock for safe concurrent access
-    def __init__(self):
-        # Set to keep track of visited URLs and avoid duplicates
-        self.visited_urls = set()
-
-        # Lock to ensure thread-safe operations when accessing the visited set
-        self.lock = threading.Lock()
-
+class Utils:
     @staticmethod
     def normalize_url(url):
         parsed = urlparse(url)
@@ -96,22 +86,27 @@ class WebCrawler:
         # Return the set of unique, fully-qualified URLs found on the page
         return urls
 
+class WebCrawler:
+
+    def __init__(self):
+        # Set to keep track of visited URLs and avoid duplicates
+        self.visited_urls = set()
+
     # Recursively crawl a given URL, staying within the specified domain
     def crawl(self, start_url, domain):
-        queue = deque([self.normalize_url(start_url)])
+        queue = deque([Utils.normalize_url(start_url)])
 
         while queue:
             url = queue.popleft()
 
-            # Acquire the lock to safely check and update the visited URLs set
-            with self.lock:
-                # Skip if the URL has already been visited
-                if url in self.visited_urls:
-                    logging.debug("Already visited: %s", url)
-                    continue
-                # Mark the URL as visited
-                self.visited_urls.add(url)
-                logging.info("Discovered unique URL for crawling: %s", url)
+
+            # Skip if the URL has already been visited
+            if url in self.visited_urls:
+                logging.debug("Already visited: %s", url)
+                continue
+            # Mark the URL as visited
+            self.visited_urls.add(url)
+            logging.info("Discovered unique URL for crawling: %s", url)
 
             logging.debug("Crawling URL: %s | visited=%d", url, len(self.visited_urls))
 
@@ -124,15 +119,14 @@ class WebCrawler:
                     continue
 
                 # Extract all valid links from the page
-                links = self.extract_links(response.text, url)
+                links = Utils.extract_links(response.text, url)
 
                 for link in links:
                     parsed_link = urlparse(link)
                     if parsed_link.netloc == domain:
-                        normalized_link = self.normalize_url(link)
-                        with self.lock:
-                            if normalized_link not in self.visited_urls:
-                                queue.append(normalized_link)
+                        normalized_link = Utils.normalize_url(link)
+                        if normalized_link not in self.visited_urls:
+                            queue.append(normalized_link)
 
             except requests.exceptions.Timeout:
                 logging.warning("Timeout occurred while accessing URL: %s", url)
@@ -155,7 +149,7 @@ def get_pages(target: str = Query(..., description="Full URL to start crawling f
     crawler = WebCrawler()
 
     # Validate the target URL; return a 400 Bad Request error if invalid or missing
-    if not target or not crawler.is_valid_url(target):
+    if not target or not Utils.is_valid_url(target):
         raise HTTPException(status_code=400, detail="Invalid or missing URL")
 
     # Parse the URL to extract its domain
