@@ -4,7 +4,7 @@ from collections import deque
 import requests
 import logging
 
-from src.utils import Utils
+from src import utils
 
 class WebCrawler:
 
@@ -13,7 +13,7 @@ class WebCrawler:
         self.visited_urls = set()
 
     def crawl(self, start_url, domain):
-        queue = deque([Utils.normalize_url(start_url)])
+        queue = deque([utils.normalize_url(start_url)])
 
         while queue:
             url = queue.popleft()
@@ -35,12 +35,12 @@ class WebCrawler:
                     continue
 
                 # Extract all valid links from the page
-                links = Utils.extract_links(response.text, url)
+                links = utils.extract_links(response.text, url)
 
                 for link in links:
                     parsed_link = urlparse(link)
                     if parsed_link.netloc == domain:
-                        normalized_link = Utils.normalize_url(link)
+                        normalized_link = utils.normalize_url(link)
                         if normalized_link not in self.visited_urls:
                             queue.append(normalized_link)
 

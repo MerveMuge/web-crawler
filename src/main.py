@@ -1,9 +1,9 @@
 from fastapi import FastAPI, Query, HTTPException
 from urllib.parse import urlparse
-from src.utils import Utils
 
 import logging
 
+from src import utils
 from src.web_crawler import WebCrawler
 
 # Configure basic logging
@@ -22,7 +22,7 @@ def get_pages(target: str = Query(..., description="Full URL to start crawling f
     crawler = WebCrawler()
 
     # Validate the target URL; return a 400 Bad Request error if invalid or missing
-    if not target or not Utils.is_valid_url(target):
+    if not target or not utils.is_valid_url(target):
         raise HTTPException(status_code=400, detail="Invalid or missing URL")
 
     # Parse the URL to extract its domain
