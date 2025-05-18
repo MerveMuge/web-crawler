@@ -4,7 +4,7 @@ from src.utils import Utils
 
 import logging
 
-from src.web_crawler_server import WebCrawler
+from src.web_crawler import WebCrawler
 
 # Configure basic logging
 logging.basicConfig(level=logging.INFO)

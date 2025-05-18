@@ -12,7 +12,7 @@ def test_invalid_url(client):
     response = client.get('/pages?target=invalid-url')
     assert response.status_code == 400
 
-@patch('src.web_crawler_server.requests.get')
+@patch('src.web_crawler.requests.get')
 def test_valid_crawl(mock_get, client):
     mock_response = Mock()
     mock_response.status_code = 200
