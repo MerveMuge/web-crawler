@@ -46,7 +46,7 @@ This protects against massive sites that could overload the crawler.
 
 ```python 
 def crawl(self, url, domain, depth=0, max_depth=3, max_pages=500):
-    if depth > max_depth or len(self.visited) >= max_pages:
+    if depth > max_depth or len(self.visited_urls) >= max_pages:
         return
     # continue crawling...
 ``` 

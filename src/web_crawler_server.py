@@ -25,12 +25,13 @@ class WebCrawler:
     # Initialize the WebCrawler with a set for visited URLs and a thread lock for safe concurrent access
     def __init__(self):
         # Set to keep track of visited URLs and avoid duplicates
-        self.visited = set()
+        self.visited_urls = set()
 
         # Lock to ensure thread-safe operations when accessing the visited set
         self.lock = threading.Lock()
 
-    def normalize_url(self, url):
+    @staticmethod
+    def normalize_url(url):
         parsed = urlparse(url)
         # Remove fragment and query, lowercase domain, strip trailing slash
         normalized = parsed._replace(
@@ -43,7 +44,8 @@ class WebCrawler:
         return urlunparse(normalized)
 
     # Check if a given URL is valid and well-formed
-    def is_valid_url(self, url):
+    @staticmethod
+    def is_valid_url(url):
         try:
             result = urlparse(url)
             # Return True only if the URL has both scheme (e.g., 'http') and netloc (domain)
@@ -51,7 +53,8 @@ class WebCrawler:
         except ValueError:
             return False
 
-    def extract_links(self, html, base_url):
+    @staticmethod
+    def extract_links(html, base_url):
         # Parse the HTML content using BeautifulSoup with the built-in HTML parser
         soup = BeautifulSoup(html, 'html.parser')
 
@@ -103,14 +106,14 @@ class WebCrawler:
             # Acquire the lock to safely check and update the visited URLs set
             with self.lock:
                 # Skip if the URL has already been visited
-                if url in self.visited:
+                if url in self.visited_urls:
                     logging.debug("Already visited: %s", url)
                     continue
                 # Mark the URL as visited
-                self.visited.add(url)
+                self.visited_urls.add(url)
                 logging.info("Discovered unique URL for crawling: %s", url)
 
-            logging.debug("Crawling URL: %s | visited=%d", url, len(self.visited))
+            logging.debug("Crawling URL: %s | visited=%d", url, len(self.visited_urls))
 
             try:
                 # Attempt to fetch the page content with a timeout
@@ -128,7 +131,7 @@ class WebCrawler:
                     if parsed_link.netloc == domain:
                         normalized_link = self.normalize_url(link)
                         with self.lock:
-                            if normalized_link not in self.visited:
+                            if normalized_link not in self.visited_urls:
                                 queue.append(normalized_link)
 
             except requests.exceptions.Timeout:
@@ -164,5 +167,5 @@ def get_pages(target: str = Query(..., description="Full URL to start crawling f
 
     return {
         'domain': f"{parsed.scheme}://{domain}",
-        'pages': sorted(crawler.visited)
+        'pages': sorted(crawler.visited_urls)
     }
