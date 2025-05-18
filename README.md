@@ -1,16 +1,18 @@
 # Web Crawler API
 
-This is a lightweight web crawler built with FastAPI. It takes a URL as input and recursively crawls all pages under the **same domain**, returning a list of unique URLs in JSON format.
+A lightweight web crawler built with FastAPI.
+
+Give it a URL — it crawls all pages under the same domain and returns a list of unique links in JSON format.
 
 ---
 
-##  Features
+##  Key Features
 
--  Single-endpoint API: `GET /pages?target=<url>`
--  Domain-restricted crawling
--  Automatic Swagger UI documentation
--  Error-tolerant (handles timeouts, SSL, broken links)
--  URL normalization (removes fragments, query params, etc.)
+-  GET endpoint: `/pages?target=<url>`
+-  Crawls only within the same domain
+-  Built-in Swagger UI (/docs) for interactive testing
+-  Skips broken, slow, or invalid URLs 
+-  URL normalization (removes query params, fragments, etc.)
 
 ---
 
@@ -23,45 +25,45 @@ This is a lightweight web crawler built with FastAPI. It takes a URL as input an
 - `pytest` – Testing framework
 - `httpx` - Required by FastAPI's TestClient
 
-Install dependencies:
+Install with:
 
 ```bash
-pip install -r requirements.txt
+  pip install -r requirements.txt
 ```
 ## How to Run
 ```bash
-cd src
-uvicorn web_crawler_server:app --reload
+  cd src
+  uvicorn web_crawler_server:app --reload
 ```
 
-## How to Run Rests
+## Run Rests
 ```bash
-    python3 -m pytest 
+  python3 -m pytest 
 ```
 
 ## Example Usage
-Visit in your browser:
+You can test the API using curl:
 ```
-http://localhost:8000/pages?target=https://example.com
+curl -X 'GET' \
+  'http://127.0.0.1:8000/pages?target=https%3A%2F%2Fexample.com' \
+  -H 'accept: application/json'
 ```
-returns:
+Response:
 ```
 {
   "domain": "https://example.com",
   "pages": [
-    "https://example.com/",
-    "https://example.com/contact.html"
+    "https://example.com"
   ]
 }
 ```
 
 ## Interactive API Docs
-FastAPI automatically generates Swagger UI for testing:
-Swagger: http://localhost:8000/docs
+FastAPI auto-generates Swagger UI for easy exploration: http://localhost:8000/docs
 
 ## Future Improvements
 
 - Support for robots.txt
-- Limit maximum crawl depth and page count
-- Async crawling for speed (e.g., using httpx)
-- Export results to file
+- Set limits for max crawl depth and total pages
+- Switch to async crawling for better performance (e.g. with httpx)
+- Add option to save/export results (e.g. JSON or CSV)
