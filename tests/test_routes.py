@@ -2,7 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 from unittest.mock import Mock, patch
 
-from src.web_crawler_server import app
+from src.main import app
 
 @pytest.fixture
 def client():

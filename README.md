@@ -23,7 +23,6 @@ Give it a URL — it crawls all pages under the same domain and returns a list o
 - `requests` – For making HTTP requests
 - `beautifulsoup4` – HTML parsing
 - `pytest` – Testing framework
-- `httpx` - Required by FastAPI's TestClient
 
 Install with:
 
@@ -32,7 +31,7 @@ Install with:
 ```
 ## How to Run
 ```bash
-  uvicorn src.web_crawler_server:app --reload
+  uvicorn src.main:app --reload
 ```
 
 ## Run Rests
