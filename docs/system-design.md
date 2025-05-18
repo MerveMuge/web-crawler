@@ -21,15 +21,14 @@ Build a web crawler that takes a URL as input and finds all unique pages for the
 + **URL Normalization**  
   Some URLs look different but actually point to the same content. The crawler cleans and standardizes each URL before saving it.
 
-+ **URL Validation**
-  
-  Check if a given URL is valid and well-formed
 
 ## Future Improvements
   + **Politeness** 
   
     A crawler that sends too many requests too quickly can unintentionally behave like a DDoS (Distributed Denial of Service) attacker.
     + **Respect robots.txt** file to indicate which parts of the site crawlers can or cannot access.
+    + **Request Throttling (Delays Between Requests)** Add a short delay between requests to slow down the crawl rate.
+
 + **Maximum Crawl Depth** 
   
     Limit how deep the crawler can go from the starting page. For example, stop after 3 levels of links.
@@ -64,10 +63,6 @@ Build a web crawler that takes a URL as input and finds all unique pages for the
 + **Metrics and Reporting**
 
     Tracking metrics helps monitor performance and spot issues.
-
-+ **Request Throttling (Delays Between Requests)**
-
-    Add a short delay between requests to slow down the crawl rate.
 
 + **Content Deduplication**
 

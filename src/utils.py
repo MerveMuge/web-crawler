@@ -6,7 +6,7 @@ class Utils:
     @staticmethod
     def normalize_url(url):
         parsed = urlparse(url)
-        # Remove fragment and query, lowercase domain, strip trailing slash
+        # Remove fragment, lowercase domain, strip trailing slash
         normalized = parsed._replace(
             scheme=parsed.scheme.lower(),      # Lowercase scheme (e.g., HTTP → http)
             netloc=parsed.netloc.lower(),      # Lowercase domain (e.g., Example.com → example.com)
