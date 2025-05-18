@@ -2,7 +2,6 @@ import unittest
 
 from src.utils import Utils
 
-
 class TestWebCrawler(unittest.TestCase):
 
     def test_extract_links_should_return_absolute_urls(self):
@@ -20,7 +19,7 @@ class TestWebCrawler(unittest.TestCase):
         self.assertIn('http://example.com/page1', links)
         self.assertIn('http://example.com/img.png', links)
 
-    def test_extract_links_should_ignore_tags_without_href_or_src(self):
+    def test_extract_links_returns_empty_set_for_tags_missing_href_or_src(self):
         """Ensure tags without href or src are ignored"""
         html = """
         <html>
@@ -56,16 +55,16 @@ class TestNormalizeURL(unittest.TestCase):
             "https://example.com/page"
         )
 
-    def test_normalize_url_should_remove_query_string(self):
+    def test_normalize_url_should_not_remove_query_string(self):
         self.assertEqual(
-            Utils.normalize_url("https://example.com/page?id=123"),
-            "https://example.com/page"
+            Utils.normalize_url("https://example.com/page?type=sound"),
+            "https://example.com/page?type=sound"
         )
 
     def test_normalize_url_should_handle_combined_case(self):
         self.assertEqual(
-            Utils.normalize_url("HTTP://Example.com/Page/?id=1#top;v=2"),
-            "http://example.com/Page"
+            Utils.normalize_url("HTTP://Example.com/Page/?type=kitchen#top"),
+            "http://example.com/Page?type=kitchen"
         )
 
     def test_normalize_url_should_handle_root_url(self):

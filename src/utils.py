@@ -11,7 +11,6 @@ class Utils:
             scheme=parsed.scheme.lower(),      # Lowercase scheme (e.g., HTTP → http)
             netloc=parsed.netloc.lower(),      # Lowercase domain (e.g., Example.com → example.com)
             path=parsed.path.rstrip('/'),      # Remove trailing slash from path (/page/ → /page)
-            query='',                          # Remove query strings (?id=1) to avoid treating dynamic pages as unique
             fragment=''                        # Remove fragments (#section, #top) since they don’t affect page content
         )
         return urlunparse(normalized)
