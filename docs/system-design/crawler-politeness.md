@@ -1,57 +1,42 @@
-# How would you prevent DDoS-like behavior from your crawler?
+# How to Prevent DDoS-Like Behavior from a Web Crawler
 
-A web crawler can unintentionally behave like a DDoS (Distributed Denial of Service) agent if it sends too many requests in a short time, especially to small or rate-limited servers.
+A crawler that sends too many requests too quickly can unintentionally behave like a DDoS (Distributed Denial of Service) attacker — especially when targeting small websites or those with limited resources.
 
-## Future Improvement
+To crawl responsibly and ethically, a few smart design choices help reduce load and respect target servers.
 
-* Maximum crawl depth to limit recursion and avoid deep link structures (e.g., only follow links 3 levels deep)
+##  Improvements to Reduce Server Load
 
-* Page limit to stop crawling after a fixed number of pages, protecting against extremely large or dynamically generated sites (e.g., stop after 500 pages)
+### Maximum Crawl Depth
+Limit how deep the crawler can go from the starting page. For example, stop after 3 levels of links.
 
-* Request throttling to add a delay between requests. This helps prevent overwhelming target servers with rapid requests and reduces the risk of DDoS-like behavior. This can be implemented using time.sleep() for synchronous code or await asyncio.sleep() in an asynchronous crawler.
+### Page Limit
 
-* Support for robots.txt to read and respect crawling rules defined by websites. robots.txt is a file websites use to guide crawlers on what they can and can't access. I can optionally add support for it to ensure my crawler respects site rules, avoids private or sensitive areas, and behaves ethically. It's not mandatory, but it's good practice.
+Stop the crawl after visiting a certain number of pages (e.g., 500).  
+This protects both the crawler and the website from unnecessary load.
 
-### 1. Set a Maximum Crawl Rate
+It prevents:
+- Overloading your own system
+- Risk of being flagged as abusive
 
-Limit the number of concurrent or total requests:
+### Request Throttling (Delays Between Requests)
 
-- Max pages per crawl (e.g., 500)
-    
-- Max requests per second (e.g., 2–5 rps)
+Add a short delay between requests to slow down the crawl rate.
 
-### 2.Define a Maximum Page Limit
-This ensures the crawler stops after visiting a fixed number of pages—like 500—even if more links are available.
+- `time.sleep(1)`  
+  Good for simple scripts. It pauses everything for 1 second before the next request.
 
-This prevents:
-- Overloading your own system or the target server
-- Risk of being blocked or flagged as abusive
+- `await asyncio.sleep(1)`  
+  Used in async crawlers — it pauses without blocking other tasks. More efficient for large-scale or parallel crawls.
 
-### 3. Request Throttling / Delay Between Requests
-Add a delay between requests to slow down the crawl rate.
+This helps prevent the crawler from bombarding a server with back-to-back requests.
 
-- time.sleep() (synchronous delay)
+### Respect robots.txt
 
-  With time.sleep(1), your program stops everything for 1 second after each request. Nothing else happens during that pause.
+Most websites publish a `robots.txt` file to indicate which parts of the site crawlers can or cannot access.
 
-- await asyncio.sleep() (asynchronous delay)  
+Although not enforced, following `robots.txt` is a widely accepted best practice that shows your crawler is respectful and ethical.
 
-  With await asyncio.sleep(1), your program starts sleeping, but during that 1 second, it can still fetch another page or do something else — improving efficiency.
-
-
-## 4. Respect robots.txt (Optional Enhancement)
-Check and honor the site’s robots.txt rules if present. Though not enforced, respecting robots.txt is standard etiquette and shows responsibility.
-
-### What is robots.txt?
-
-robots.txt is a special file that websites use to guide web crawlers on which parts of the site they are allowed or not allowed to crawl. It’s located at the root of the site:
-
-It's located at the root of a website, like:
-```
-https://example.com/robots.txt
-```
-
-### Example of a robots.txt file
+#### Example: `https://example.com/robots.txt`
 ```
 User-agent: *
 Disallow: /private/
@@ -59,9 +44,12 @@ Allow: /public/
 Crawl-delay: 10
 ```
 
-|             Line             |                  Meaning                   | 
-|:----------------------------:|:------------------------------------------:|
-|        User-agent: *         |          Applies to all crawlers           |
-|     Disallow: /private/      |   Don’t crawl any pages under /private/    | 
-|     Allow: /public/          |  Crawlers are allowed to access /public/   | 
-|       Crawl-delay: 10        | Wait at least 10 seconds between requests  | 
+
+|             Line             |                  Meaning                  | 
+|:----------------------------:|:-----------------------------------------:|
+|        User-agent: *         |          Applies to all crawlers          |
+|     Disallow: /private/      |     Don’t visit pages under /private/     | 
+|     Allow: /public/          |  Crawlers are allowed to access /public/  | 
+|       Crawl-delay: 10        | Wait at least 10 seconds between requests | 
+
+
