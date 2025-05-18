@@ -1,53 +1,44 @@
 # Technology & Library Choices
 
-This document explains the reasoning behind the libraries and frameworks used in the crawler implementation.
+This document outlines the key libraries and technologies used in the crawler, along with the reasoning behind each choice.
 
 ##  Why FastAPI?
+FastAPI was selected as the web framework due to its balance of simplicity and developer experience.
 
-I chose FastAPI for this project because it combines simplicity with powerful developer tooling — particularly useful in an interview or review setting.
+**Advantages:**
+- **Auto-generated API docs**  
+  FastAPI automatically serves interactive docs at /docs (Swagger UI) http://localhost:8000/docs.
+- **Minimal setup**  
+- **Ideal for demonstration**  
+  Makes it easy for reviewers to explore the API without diving into the codebase.
 
-Key Reasons:
-- Built-in Swagger UI: FastAPI automatically generates /docs (Swagger) and /redoc endpoints, making the API easy to test, explore, and demonstrate.
-- Minimal setup: Like Flask, FastAPI is lightweight and quick to start with — perfect for a single-endpoint project.
-- Great for visibility: The auto-generated documentation is ideal for interviews, helping reviewers quickly understand the structure and behavior of the API.
-
-In this context, FastAPI offered better presentation and review capabilities while remaining just as easy to implement as Flask.
-
-## Why `requests` and not `aiohttp` or `httpx`?
-
+## Why requests (not aiohttp or httpx)?
 **requests** is a mature, stable, and user-friendly HTTP client.
 
-* Easier to debug, widely used 
-* Synchronous — matches the simple recursion model used
-* Not as fast as async for high-throughput workloads
+**Advantages:**
+-  Mature, stable
+-  Synchronous behavior matches the current recursive crawl logic
 
-> For a single-threaded or one-off crawler, `requests` is more than sufficient. If the crawler needed to handle many pages concurrently, `aiohttp` or `httpx` with async would improve performance.
+ For lightweight or one-off crawling tasks, requests keeps things simple.  
+ If the crawler were scaled up or made concurrent, libraries like aiohttp or httpx would be better suited.
 
-## Why `threading.Lock()`?
+## Why threading.Lock()?
+While the current implementation is mostly synchronous, threading.Lock() is used to protect shared access to the visited set.
 
-Even though the crawler runs synchronously, `threading.Lock()` ensures thread-safe access to the shared `visited` set.
+**Advantages:**
+-  Prevents race conditions if threading is added later
+-  Ensures data consistency
 
-* Useful if multi-threading is added later
-* Avoids race conditions and duplicate visits
+## Why BeautifulSoup for HTML parsing?
+BeautifulSoup simplifies extraction of links (href, src) and works reliably even when HTML is not perfectly structured — which is common on real-world websites.
 
-## Why `BeautifulSoup` for HTML parsing?
+**Advantages:**
+-  Easy to use and read
+-  Robust against broken or malformed HTML
 
-* Simple to extract `href` and `src` attributes from various tags
-* Handles malformed or real-world HTML better than regex or low-level parsing
+## Why urllib.parse?
+Python’s built-in urllib.parse module handles all the URL operations:
 
-> It’s widely supported, easy to read, and effective for most crawling use cases.
-
-## Why `urllib.parse`?
-
-Used for:
-* URL normalization (`urlparse`, `urlunparse`)
-* Joining relative and absolute links (`urljoin`)
-* Extracting domains (`netloc`)
-
-> This standard library module is fast, stable, and avoids external dependencies.
-
-## Summary
-
-This crawler is intentionally built with **simplicity** and **clarity** in mind — perfect for demonstrating problem-solving without overengineering.
-
-If future scaling or performance becomes necessary, each component (Flask, requests, etc.) can be swapped or extended.
+- urlparse / urlunparse → for URL normalization
+- urljoin → for resolving relative links
+- netloc → for domain checking
