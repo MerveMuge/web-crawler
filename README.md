@@ -64,6 +64,16 @@ FastAPI auto-generates Swagger UI for easy exploration: http://localhost:8000/do
 ## Future Improvements
 
 - Support for robots.txt
+
+  Read and follow rules defined by websites to avoid crawling restricted or sensitive areas.
 - Set limits for max crawl depth and total pages
 - Switch to async crawling for better performance (e.g. with httpx)
 - Add option to save/export results (e.g. JSON or CSV)
+- Add content parsing 
+
+    After downloading a page, it should be parsed into a structured format.
+Parsing also acts as validation — helping to filter out broken, malformed, or irrelevant HTML pages before storing or analyzing them.
+- Detect duplicate content (Content Seen)
+
+    Currently, the crawler checks if a URL has been visited, but not if the content is identical across different URLs.
+Hashing the page body (e.g., using SHA-256) would allow the crawler to skip duplicate pages even when the URL is unique.
