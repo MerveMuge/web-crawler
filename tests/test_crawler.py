@@ -19,7 +19,7 @@ class TestWebCrawler(unittest.TestCase):
         self.assertIn('http://example.com/page1', links)
         self.assertIn('http://example.com/img.png', links)
 
-    def test_extract_links_returns_empty_set_for_tags_missing_href_or_src(self):
+    def test_extract_links_should_returns_empty_set_for_tags_missing_href_or_src(self):
         """Ensure tags without href or src are ignored"""
         html = """
         <html>
@@ -61,13 +61,13 @@ class TestNormalizeURL(unittest.TestCase):
             "https://example.com/page?type=sound"
         )
 
-    def test_normalize_url_should_handle_combined_case(self):
+    def test_normalize_url_should_removes_fragment_and_lowercases_scheme_and_host(self):
         self.assertEqual(
             Utils.normalize_url("HTTP://Example.com/Page/?type=kitchen#top"),
             "http://example.com/Page?type=kitchen"
         )
 
-    def test_normalize_url_should_handle_root_url(self):
+    def test_normalize_url_should_lowercase_domain_and_remove_trailing_slash(self):
         self.assertEqual(
             Utils.normalize_url("https://Example.com/"),
             "https://example.com"
