@@ -86,7 +86,7 @@ if response is None:
 ### Custom URL validation 
 To avoid wasting requests on unsupported or broken links, the URL validation function can be extended to reject:
 - mailto:, javascript:, tel: — not real web pages
-- Empty strings or fragment-only links ("#", "#section")
+- Empty strings ("#")
 - (If Applicable) Static files like .css, .jpg, .pdf, etc.
 
 `<a href="mailto:someone@example.com">Email</a>` -> Not Valid - not crawlable

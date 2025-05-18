@@ -14,7 +14,6 @@ Some URLs look different but actually point to the same content. The crawler cle
 
 - `/page` vs `/page/` (trailing slash)
 - `#section` (fragment)
-- `?month=2023-09` (query parameters)
 
 Removing these parts ensures that different versions of the same URL are treated as one — avoiding unnecessary re-crawling.
 

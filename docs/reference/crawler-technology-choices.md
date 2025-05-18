@@ -22,13 +22,6 @@ FastAPI was selected as the web framework due to its balance of simplicity and d
  For lightweight or one-off crawling tasks, requests keeps things simple.  
  If the crawler were scaled up or made concurrent, libraries like aiohttp or httpx would be better suited.
 
-## Why threading.Lock()?
-While the current implementation is mostly synchronous, threading.Lock() is used to protect shared access to the visited set.
-
-**Advantages:**
--  Prevents race conditions if threading is added later
--  Ensures data consistency
-
 ## Why BeautifulSoup for HTML parsing?
 BeautifulSoup simplifies extraction of links (href, src) and works reliably even when HTML is not perfectly structured — which is common on real-world websites.
 
