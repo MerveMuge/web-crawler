@@ -1,12 +1,9 @@
 import unittest
 
-from src.web_crawler_server import WebCrawler, Utils
+from src.utils import Utils
 
 
 class TestWebCrawler(unittest.TestCase):
-
-    # def setUp(self):
-    #     self.crawler = WebCrawler()
 
     def test_extract_links_should_return_absolute_urls(self):
         html = """
@@ -40,9 +37,6 @@ class TestWebCrawler(unittest.TestCase):
         self.assertEqual(len(links), 0)  # Should return an empty set
 
 class TestNormalizeURL(unittest.TestCase):
-
-    # def setUp(self):
-    #     self.crawler = WebCrawler()
 
     def test_normalize_url_should_lowercase_scheme_and_domain(self):
         self.assertEqual(
@@ -81,8 +75,6 @@ class TestNormalizeURL(unittest.TestCase):
         )
 
 class TestIsValidUrl(unittest.TestCase):
-    # def setUp(self):
-    #     self.crawler = WebCrawler()
 
     def test_is_valid_url_should_return_true_for_valid_http_url(self):
         """Check that a standard HTTP URL is valid"""

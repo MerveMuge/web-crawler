@@ -32,13 +32,12 @@ Install with:
 ```
 ## How to Run
 ```bash
-  cd src
-  uvicorn web_crawler_server:app --reload
+  uvicorn src.web_crawler_server:app --reload
 ```
 
 ## Run Rests
 ```bash
-  python3 -m pytest 
+  PYTHONPATH=src python3 -m pytest 
 ```
 
 ## Example Usage
