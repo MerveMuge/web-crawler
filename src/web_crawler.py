@@ -6,28 +6,17 @@ import logging
 
 from src.utils import Utils
 
-"""
-Web Crawler API (FastAPI)
-
-This FastAPI app exposes an HTTP GET endpoint `/pages` that crawls a website starting from the provided URL.
-It returns all unique, valid pages under the same domain.
-
-Example usage:
-http://localhost:8000/pages?target=https://example.com
-"""
 class WebCrawler:
 
     def __init__(self):
         # Set to keep track of visited URLs and avoid duplicates
         self.visited_urls = set()
 
-    # Recursively crawl a given URL, staying within the specified domain
     def crawl(self, start_url, domain):
         queue = deque([Utils.normalize_url(start_url)])
 
         while queue:
             url = queue.popleft()
-
 
             # Skip if the URL has already been visited
             if url in self.visited_urls:
@@ -36,8 +25,6 @@ class WebCrawler:
             # Mark the URL as visited
             self.visited_urls.add(url)
             logging.info("Discovered unique URL for crawling: %s", url)
-
-            logging.debug("Crawling URL: %s | visited=%d", url, len(self.visited_urls))
 
             try:
                 # Attempt to fetch the page content with a timeout
