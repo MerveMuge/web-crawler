@@ -19,11 +19,11 @@ app = FastAPI(title="Web Crawler API")
 )
 def get_pages(target: str = Query(..., description="Full URL to start crawling from (e.g., https://example.com)")):
 
-    crawler = WebCrawler()
-
     # Validate the target URL; return a 400 Bad Request error if invalid or missing
     if not target or not utils.is_valid_url(target):
         raise HTTPException(status_code=400, detail="Invalid or missing URL")
+
+    crawler = WebCrawler()
 
     # Parse the URL to extract its domain
     parsed = urlparse(target)
